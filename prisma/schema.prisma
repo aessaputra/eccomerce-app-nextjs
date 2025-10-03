@@ -16,51 +16,67 @@ datasource db {
 }
 
 enum RoleUser {
-  superadmin customer
+  superadmin
+  customer
 }
 
 model User {
-  id int @id @default(autoincrement())
-  name String @db.VarChar(255)
-  email String @unique @db.Varchar(255)
-  password String @db.VarChar(255)
-  role RoleUser @default(customer)
+  id       Int      @id @default(autoincrement())
+  name     String   @db.VarChar(255)
+  email    String   @unique
+  password String   @db.VarChar(255)
+  role     RoleUser @default(customer)
+  orders   Order[]
 
-  orders Order[]
-
-  created_at Datetime @default(now())
-  updated_at Datetime @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model Brand {
-  id int @id @default(autoincrement())
-  name String @db.VarChar(255)
-  logo string @db.VarChar(255)
-
+  id       Int       @id @default(autoincrement())
+  name     String    @db.VarChar(255)
+  logo     String    @db.VarChar(255)
   products Product[]
 
-  created_at Datetime @default(now())
-  updated_at Datetime @updatedAt  
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model Category {
-  id int @id @default(autoincrement())
-  name String @db.VarChar(255)
-
+  id       Int       @id @default(autoincrement())
+  name     String    @db.VarChar(255)
   products Product[]
 
-  created_at Datetime @default(now())
-  updated_at Datetime @updatedAt  
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model Location {
-  id int @id @default(autoincrement())
-  name String @db.VarChar(255)
-
+  id       Int       @id @default(autoincrement())
+  name     String    @db.VarChar(255)
   products Product[]
 
-  created_at Datetime @default(now())
-  updated_at Datetime @updatedAt  
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Product {
+  id          Int            @id @default(autoincrement())
+  brand_id    Int
+  brand       Brand          @relation(fields: [brand_id], references: [id])
+  category_id Int
+  category    Category       @relation(fields: [category_id], references: [id])
+  location_id Int
+  location    Location       @relation(fields: [location_id], references: [id])
+  name        String         @db.VarChar(255)
+  description String         @db.Text
+  price       BigInt         @db.BigInt
+  stock       ProductStock
+  images      String[]
+  orders      OrderProduct[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 enum ProductStock {
@@ -68,70 +84,44 @@ enum ProductStock {
   preorder
 }
 
-model Product {
-  id int @id @default(autoincrement())
-  brand_id Brand @relation(field: [brand_id], references: [id])
-  category_id Int
-  category Category @relation(fields: [category_id], references: [id])
-  location_id Int
-  location Location @relation(fields: [location_id], references [id])
-  name String @db.VarChar(255)
-  description String @db.Text
-  price BigInt @db.BigInt
-  stock ProductStock
-  images String[]
-
-  orders OrderProduct[]
-
-  created_at Datetime @default(now())
-  updated_at Datetime @updatedAt  
-}
-
-enum Status Order {
+enum StatusOrder {
   pending
   success
   failed
 }
 
 model Order {
-  id int @id @default(autoincrement())
-
-  code String @db.text @unique
-  user_id Int
-  user User @relation(fields: [user_id], references: [id])
-  total BigInt @db.BigInt
-  status StatusOrder
-
-  detail OrderDetail?
+  id       Int            @id @default(autoincrement())
+  code     String         @unique
+  user_id  Int
+  user     User           @relation(fields: [user_id], references: [id])
+  total    BigInt         @db.BigInt
+  status   StatusOrder
+  detail   OrderDetail?
   products OrderProduct[]
 
-  created_at Datetime @default(now())
-  updated_at Datetime @updatedAt  
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model OrderDetail {
-  id int @id @default(autoincrement())
-  
-  order_id Int @unique
-  order Order @relation(fields: [order_id], references: [id])
-  name String @db.VarChar(255)
-  phone String @db.VarChar(255)
-  address String @db.VarChar(255)
-  city String @db.VarChar(255)
-  postal_code String @db.VarChar(255)
-  notes String? @db.VarChar(255)
+  id       Int   @id @default(autoincrement())
+  order_id Int   @unique
+  order    Order @relation(fields: [order_id], references: [id])
+  quantity Int
 
-  created_at Datetime @default(now())
-  updated_at Datetime @updatedAt  
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model OrderProduct {
-  id int @id @default(autoincrement())
+  id         Int     @id @default(autoincrement())
+  order_id   Int
+  order      Order   @relation(fields: [order_id], references: [id])
   product_id Int
-  product Product @relation(fields: [product_id], references: [id])
-  order_id Int
-  order Order @relation(fields: [order_id], references: [id])
+  product    Product @relation(fields: [product_id], references: [id])
+  quantity   Int
 
-  created_at Datetime @default(now())
-  updated_at Datetime @updatedAt  
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
