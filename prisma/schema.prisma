@@ -25,10 +25,22 @@ model User {
   email    String   @unique
   password String   @db.VarChar(255)
   role     RoleUser @default(customer)
+
   orders   Order[]
+  auth_session Session[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+}
+
+model Session {
+  id             String @id @unique
+  user_id        Int
+  active_expires BigInt
+  idle_expires   BigInt
+  user           User   @relation(references: [id], fields: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
 }
 
 model Brand {
